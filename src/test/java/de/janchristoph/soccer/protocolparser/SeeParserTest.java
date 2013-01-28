@@ -3,10 +3,11 @@ package de.janchristoph.soccer.protocolparser;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import de.janchristoph.soccer.model.FlagType;
 import de.janchristoph.soccer.model.GoalType;
 
 public class SeeParserTest {
-	private static final String SEE_STRING = "(see 181 ((flag c t) 9.5 18 0 0) ((flag r t) 61.6 2) ((flag grb) 75.9 35) ((goal r) 71.5 31)"
+	private static final String SEE_STRING = "(see 181 ((flag c t) 9.5 18) ((flag r t) 61.6 2) ((flag g r b) 75.9 35) ((goal r) 71.5 31)"
 			+ " ((flag g r t) 68.7 25) ((flag p r c) 58 39) ((flag p r t) 47.9 20) ((ball) 0.4 -88 0 0)";
 	private static final String SEE_STRING_2 = "(see 72 ((flag c) 18.2 -35 0 0) ((flag c t) 35.9 33) ((flag l t) 76.7 -2) ((flag g l b) 70.8 -34)"
 			+ " ((goal l) 70.8 -28) ((flag g l t) 70.8 -23) ((flag p l c) 54.1 -29) ((flag p l t) 56.8 -8) ((Ball) 3 138) ((line t) 69.4 -26))";
@@ -47,5 +48,29 @@ public class SeeParserTest {
 	@Test
 	public void parseGoalsIfNoneInSight() {
 		Assert.assertEquals((new SeeParser(SEE_STRING_3)).parseGoals().size(), 0);
+	}
+
+	@Test
+	public void parseEdgeFlags() {
+		SeeParser seeParser = new SeeParser(SEE_STRING);
+		Assert.assertEquals(seeParser.parseEdgeFlags().size(), 2);
+		Assert.assertEquals(seeParser.parseEdgeFlags().get(0).getType(), FlagType.CENTER_TOP);
+		Assert.assertEquals(seeParser.parseEdgeFlags().get(0).getDistance(), Double.valueOf(9.5));
+		Assert.assertEquals(seeParser.parseEdgeFlags().get(0).getDirection(), Double.valueOf(18));
+		Assert.assertEquals(seeParser.parseEdgeFlags().get(1).getType(), FlagType.RIGHT_TOP);
+		Assert.assertEquals(seeParser.parseEdgeFlags().get(1).getDistance(), Double.valueOf(61.6));
+		Assert.assertEquals(seeParser.parseEdgeFlags().get(1).getDirection(), Double.valueOf(2));
+	}
+
+	@Test
+	public void parseGoalFlags() {
+		SeeParser seeParser = new SeeParser(SEE_STRING);
+		Assert.assertEquals(seeParser.parseGoalFlags().size(), 2);
+		Assert.assertEquals(seeParser.parseGoalFlags().get(0).getType(), FlagType.GOAL_RIGHT_BOTTOM);
+		Assert.assertEquals(seeParser.parseGoalFlags().get(0).getDistance(), Double.valueOf(75.9));
+		Assert.assertEquals(seeParser.parseGoalFlags().get(0).getDirection(), Double.valueOf(35));
+		Assert.assertEquals(seeParser.parseGoalFlags().get(1).getType(), FlagType.GOAL_RIGHT_TOP);
+		Assert.assertEquals(seeParser.parseGoalFlags().get(1).getDistance(), Double.valueOf(68.7));
+		Assert.assertEquals(seeParser.parseGoalFlags().get(1).getDirection(), Double.valueOf(25));
 	}
 }
