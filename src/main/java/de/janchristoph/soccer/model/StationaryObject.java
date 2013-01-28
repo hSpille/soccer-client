@@ -1,4 +1,5 @@
 package de.janchristoph.soccer.model;
 
-public class StationaryObject extends FieldObject {
+public class StationaryObject extends GameObject {
+
 }

@@ -1,13 +1,13 @@
 package de.janchristoph.soccer.model;
 
 public class Line extends GameObject {
-	private Long lineId;
+	private LineType type;
 
-	public Long getLineId() {
-		return lineId;
+	public LineType getType() {
+		return type;
 	}
 
-	public void setLineId(Long lineId) {
-		this.lineId = lineId;
+	public void setType(LineType type) {
+		this.type = type;
 	}
 }
