@@ -3,11 +3,15 @@ package de.janchristoph.soccer.protocolparser;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import de.janchristoph.soccer.model.GoalType;
+
 public class SeeParserTest {
 	private static final String SEE_STRING = "(see 181 ((flag c t) 9.5 18 0 0) ((flag r t) 61.6 2) ((flag grb) 75.9 35) ((goal r) 71.5 31)"
 			+ " ((flag g r t) 68.7 25) ((flag p r c) 58 39) ((flag p r t) 47.9 20) ((ball) 0.4 -88 0 0)";
-	private static final String SEE_STRING_2 = "(see 181 ((flag c t) 9.5 18 0 0) ((flag r t) 61.6 2) ((flag grb) 75.9 35) ((goal r) 71.5 31)"
-			+ " ((flag g r t) 68.7 25) ((flag p r c) 58 39) ((flag p r t) 47.9 20)";
+	private static final String SEE_STRING_2 = "(see 72 ((flag c) 18.2 -35 0 0) ((flag c t) 35.9 33) ((flag l t) 76.7 -2) ((flag g l b) 70.8 -34)"
+			+ " ((goal l) 70.8 -28) ((flag g l t) 70.8 -23) ((flag p l c) 54.1 -29) ((flag p l t) 56.8 -8) ((Ball) 3 138) ((line t) 69.4 -26))";
+	private static final String SEE_STRING_3 = "(see 72 ((flag c) 18.2 -35 0 0) ((flag c t) 35.9 33) ((flag l t) 76.7 -2) ((flag g l b) 70.8 -34)"
+			+ " ((flag g l t) 70.8 -23) ((flag p l c) 54.1 -29) ((flag p l t) 56.8 -8) ((line t) 69.4 -26))";
 
 	@Test
 	public void parseCylceNumber() {
@@ -22,7 +26,26 @@ public class SeeParserTest {
 	}
 
 	@Test
+	public void parseBallIfInCapitalLetters() {
+		Assert.assertEquals((new SeeParser(SEE_STRING_2)).parseBall().getDistance(), Double.valueOf(3));
+		Assert.assertEquals((new SeeParser(SEE_STRING_2)).parseBall().getDirection(), Double.valueOf(138));
+	}
+
+	@Test
 	public void parseBallIfNoneInSight() {
-		Assert.assertEquals((new SeeParser(SEE_STRING_2)).parseBall(), null);
+		Assert.assertEquals((new SeeParser(SEE_STRING_3)).parseBall(), null);
+	}
+
+	@Test
+	public void parseGoals() {
+		Assert.assertEquals((new SeeParser(SEE_STRING)).parseGoals().size(), 1);
+		Assert.assertEquals((new SeeParser(SEE_STRING)).parseGoals().get(0).getType(), GoalType.RIGHT);
+		Assert.assertEquals((new SeeParser(SEE_STRING)).parseGoals().get(0).getDistance(), Double.valueOf(71.5));
+		Assert.assertEquals((new SeeParser(SEE_STRING)).parseGoals().get(0).getDirection(), Double.valueOf(31));
+	}
+
+	@Test
+	public void parseGoalsIfNoneInSight() {
+		Assert.assertEquals((new SeeParser(SEE_STRING_3)).parseGoals().size(), 0);
 	}
 }
