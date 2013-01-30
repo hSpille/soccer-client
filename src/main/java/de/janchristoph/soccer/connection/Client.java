@@ -1,16 +1,14 @@
 package de.janchristoph.soccer.connection;
 
-
 public class Client {
 	private ConnectionManager cm = new ConnectionManager();
 	private NewDataRunnable newDataRunnable;
 	private Thread listenerThread;
 
 	public Client() {
-		startListening();
 	}
 
-	private void startListening() {
+	public void startListening() {
 		listenerThread = new Thread(new ClientListener(cm, this));
 		listenerThread.start();
 	}
@@ -67,12 +65,15 @@ public class Client {
 		cm.send("(turn_neck " + angle + ")");
 	}
 
-	public void onNewData(NewDataRunnable newDataRunnable) {
-		this.newDataRunnable = newDataRunnable;
+	public void processNewData(String line) {
+		newDataRunnable.onNewData(line);
 	}
 
-	public void processNewData(String line) {
-		newDataRunnable.setDataset(line);
-		newDataRunnable.run();
+	public NewDataRunnable getNewDataRunnable() {
+		return newDataRunnable;
+	}
+
+	public void setNewDataRunnable(NewDataRunnable newDataRunnable) {
+		this.newDataRunnable = newDataRunnable;
 	}
 }
