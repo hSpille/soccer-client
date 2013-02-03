@@ -2,10 +2,24 @@ package de.janchristoph.soccer.model;
 
 import java.util.List;
 
+import de.janchristoph.soccer.protocolparser.SeeParser;
+
 public class GameState {
 	private Integer cycle;
 	private List<Flag> flags;
 	private Ball ball;
+	private SeeParser parser;
+	
+	
+	public GameState(){
+		
+	}
+	
+	public GameState (String serverData){
+		parser = new SeeParser(serverData);
+		this.ball = parser.parseBall();
+		this.cycle = parser.parseCycleNumber();
+	}
 
 	public List<Flag> getFlags() {
 		return flags;

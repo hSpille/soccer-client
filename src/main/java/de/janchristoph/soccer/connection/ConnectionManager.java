@@ -7,9 +7,20 @@ import java.net.InetSocketAddress;
 import java.net.SocketException;
 
 public class ConnectionManager {
+	private static final int PORT = 6000;
+	private String server = "localhost";
 	private DatagramSocket socket;
 
-	public ConnectionManager() {
+	
+	public ConnectionManager (){
+		this.server = "localhost";
+		createSocket();
+	}
+	public ConnectionManager(String server) {
+		this.server = server;
+		createSocket();
+	}
+	private void createSocket() {
 		try {
 			socket = new DatagramSocket();
 		} catch (SocketException e) {
@@ -20,7 +31,7 @@ public class ConnectionManager {
 	public void send(String msg) {
 		byte[] data = msg.getBytes();
 		try {
-			DatagramPacket packet = new DatagramPacket(data, data.length, new InetSocketAddress("localhost", 6000));
+			DatagramPacket packet = new DatagramPacket(data, data.length, new InetSocketAddress(server, PORT));
 			socket.send(packet);
 		} catch (SocketException e) {
 			e.printStackTrace();
@@ -37,6 +48,8 @@ public class ConnectionManager {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return new String(packet.getData());
+		byte[] data = packet.getData();
+		
+		return new String(data);
 	}
 }
