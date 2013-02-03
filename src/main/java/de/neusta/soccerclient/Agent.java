@@ -1,6 +1,7 @@
 package de.neusta.soccerclient;
 
-import de.neusta.soccerclient.Client.GAMESTATE;
+import de.neusta.soccerclient.provided.Client;
+import de.neusta.soccerclient.provided.Client.GAMESTATE;
 
 public class Agent {
 	public final Client client;

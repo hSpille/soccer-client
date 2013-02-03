@@ -1,7 +1,7 @@
 package de.janchristoph.soccer.protocolparser;
 
-import de.neusta.soccerclient.Client;
-import de.neusta.soccerclient.Client.GAMESTATE;
+import de.neusta.soccerclient.provided.Client;
+import de.neusta.soccerclient.provided.Client.GAMESTATE;
 
 public class StateParser {
 	private static final String BEFORE_KICK_OFF_PROTOCOL = "before_kick_off";
