@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import de.janchristoph.soccer.connection.ConnectionManager;
 import de.janchristoph.soccer.model.Ball;
 import de.janchristoph.soccer.model.GameState;
+import de.janchristoph.soccer.model.Goal;
 import de.janchristoph.soccer.model.SenseBodyParser;
 import de.janchristoph.soccer.protocolparser.SeeParser;
 import de.janchristoph.soccer.protocolparser.StateParser;
@@ -139,6 +140,7 @@ public class Client {
 			System.out.println("GameState now "
 					+ this.currentGameState.toString());
 		} else if (SeeParser.isSeeMessage(line)) {
+			System.out.println(line);
 			newSee = true;
 			GameState state = new GameState(line);
 			this.addState(state);
@@ -165,6 +167,10 @@ public class Client {
 			return distance < 1;
 		}
 		return false;
+	}
+	
+	public Goal getOpponentGoal(){
+		return null;
 	}
 
 }
