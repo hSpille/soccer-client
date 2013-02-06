@@ -1,6 +1,11 @@
 package de.janchristoph.soccer;
 
 public class MyPlayer extends Player {
+
+	public MyPlayer(String teamName) {
+		super(teamName);
+	}
+
 	@Override
 	public void onCycle() {
 		if (getLatestGameState() == null) {

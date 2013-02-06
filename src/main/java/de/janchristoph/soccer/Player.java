@@ -10,14 +10,13 @@ import de.janchristoph.soccer.model.GameState;
 import de.janchristoph.soccer.protocolparser.SeeParser;
 
 public abstract class Player implements NewDataRunnable {
-	private static final String DEFAULT_TEAM_NAME = "Test-Team";
-	private static final String PROTOCOL_SEE_START = "(see";
-
 	protected Client client;
 	private List<GameState> gameStates = new ArrayList<GameState>();
 	private Integer lastCycle = -1;
+	private final String teamName;
 
-	public Player() {
+	public Player(String teamName) {
+		this.teamName = teamName;
 	}
 	
 	public void start() {
@@ -28,13 +27,13 @@ public abstract class Player implements NewDataRunnable {
 	}
 
 	public void onStart() {
-		client.init(DEFAULT_TEAM_NAME);
-		client.move(-10, 0);
+		client.init(teamName);
+		client.move(-10, (int) (Math.random() * 15));
 	}
 
 	public void onNewData(String line) {
 		Integer cycle = -1;
-		if (line.startsWith(PROTOCOL_SEE_START)) {
+		if (line.startsWith(SeeParser.PROTOCOL_SEE_START)) {
 			SeeParser parser = new SeeParser(line);
 			cycle = parser.parseCycleNumber();
 			

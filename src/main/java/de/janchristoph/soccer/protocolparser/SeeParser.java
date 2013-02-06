@@ -18,15 +18,21 @@ public class SeeParser {
 	private static final Pattern CYCLE_PATTERN = Pattern.compile("\\(see ([0-9]+) ");
 	private static final Pattern BALL_PATTERN = Pattern.compile("\\(\\([bB]all\\) ([0-9-.]+) ([0-9-.]+)( ([0-9-.]+) ([0-9-.]+))?\\)");
 	private String seeString;
+	public static final String PROTOCOL_SEE_START = "(see";
 
 	public SeeParser(String seeString) {
 		this.seeString = seeString;
 	}
 
 	public Integer parseCycleNumber() {
-		Matcher m = CYCLE_PATTERN.matcher(seeString);
-		m.find();
-		Integer cycle = Integer.valueOf(m.group(1));
+		Integer cycle = 0;
+		try{
+			Matcher m = CYCLE_PATTERN.matcher(seeString);
+			m.find();
+			cycle = Integer.valueOf(m.group(1));
+		} catch (IllegalStateException ex){
+			System.out.println("Caught Illegal State on: " + seeString);
+		}
 		return cycle;
 	}
 
@@ -137,5 +143,12 @@ public class SeeParser {
 			type = FlagType.GOAL_RIGHT_BOTTOM;
 		}
 		return type;
+	}
+
+	public static boolean isSeeMessage(String line) {
+		if (line.startsWith(SeeParser.PROTOCOL_SEE_START)) {
+			return true;
+		}
+		return false;
 	}
 }
