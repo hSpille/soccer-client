@@ -26,17 +26,21 @@ public class Client {
 	public GAMESTATE currentGameState = GAMESTATE.BEFORE_KICKOFF;
 	public int latestProcessedGamestate = -1;
 	private Agent agent;
+	private final int initialPositionX;
+	private final int initialPositionY;
 
-	public Client(String team, String server, Agent agent) {
+	public Client(String team, String server, Agent agent, int initialPositionX, int initialPositionY) {
 		this.agent = agent;
 		this.team = team;
 		this.serverIp = server;
+		this.initialPositionX = initialPositionX;
+		this.initialPositionY = initialPositionY;
 		conMan = new ConnectionManager(serverIp);
 	}
 
 	public void start() {
 		this.init(team);
-		this.move(-10, (int) (Math.random() * 15));
+		this.move(initialPositionX, initialPositionY);
 		Thread t = new Thread(new Receiver(conMan, this));
 		t.start();
 	}
@@ -61,28 +65,7 @@ public class Client {
 		conMan.send("(change_view " + width + " " + quality + ")");
 	}
 
-	public boolean goToBall() {
-		boolean toReturn = false;
-		Ball ball = getLatestGameState().getBall();
-		if (ball != null) {
-			if (ball.getDirection().doubleValue() > 5) {
-				System.out.println("Turning");
-				this.turn(getLatestGameState().getBall().getDirection()
-						.intValue());
-				toReturn = true;
-			} else if (ball.getDirection().doubleValue() < -5) {
-				System.out.println("Turning");
-				this.turn(-getLatestGameState().getBall().getDirection()
-						.intValue());
-				toReturn = true;
-			} else if (ball.getDistance() > Double.valueOf(1)) {
-				System.out.println("walking");
-				this.dash(100);
-				toReturn = true;
-			}
-		}
-		return toReturn;
-	}
+	
 
 
 	public void dash(Integer power) {
@@ -140,7 +123,6 @@ public class Client {
 			System.out.println("GameState now "
 					+ this.currentGameState.toString());
 		} else if (SeeParser.isSeeMessage(line)) {
-			System.out.println(line);
 			newSee = true;
 			GameState state = new GameState(line);
 			this.addState(state);
@@ -155,10 +137,6 @@ public class Client {
 		}
 	}
 
-	public void searchBall() {
-		System.out.println("Searching Ball");
-		this.turn(25);
-	}
 
 	public boolean canKick() {
 		Ball ball = latestGameState.getBall();
