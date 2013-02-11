@@ -7,6 +7,8 @@ import de.janchristoph.soccer.connection.Client;
 import de.janchristoph.soccer.connection.DataReceiver;
 import de.janchristoph.soccer.model.Ball;
 import de.janchristoph.soccer.model.GameState;
+import de.janchristoph.soccer.model.Goal;
+import de.janchristoph.soccer.model.GoalType;
 import de.janchristoph.soccer.model.PlayMode;
 import de.janchristoph.soccer.model.Side;
 import de.janchristoph.soccer.protocolparser.InitParser;
@@ -42,6 +44,14 @@ public abstract class Player implements DataReceiver {
 
 			Ball ball = parser.parseBall();
 			gameState.setBall(ball);
+
+			gameState.setFlags(parser.parseAllFlags());
+			for (Goal g : parser.parseGoals()) {
+				if (g.getType().equals(GoalType.LEFT))
+					gameState.setLeftGoal(g);
+				else if (g.getType().equals(GoalType.RIGHT))
+					gameState.setRightGoal(g);
+			}
 		} else if (line.startsWith("(init")) {
 			InitParser parser = new InitParser(line);
 			side = parser.parseSide();

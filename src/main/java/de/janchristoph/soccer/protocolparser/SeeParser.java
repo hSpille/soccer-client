@@ -11,6 +11,10 @@ import de.janchristoph.soccer.model.FlagType;
 import de.janchristoph.soccer.model.Goal;
 import de.janchristoph.soccer.model.GoalType;
 
+/**
+ * TODO: Linien parsen
+ * TODO: Player parsen
+ */
 public class SeeParser {
 	private static final Pattern PENALTY_FLAG_PATTERN = Pattern.compile("\\(\\(flag p ([rl]) ([tcb])\\) ([0-9-.]+) ([0-9-.]+)\\)");
 	private static final Pattern OUTER_FLAG_PATTERN = Pattern.compile("\\(\\(flag ([rltb]) ([rltb]) ([0-9]0)\\) ([0-9-.]+) ([0-9-.]+)\\)");
@@ -268,5 +272,17 @@ public class SeeParser {
 			type = FlagType.PENALTY_RIGHT_BOTTOM;
 		}
 		return type;
+	}
+
+	public List<Flag> parseAllFlags() {
+		List<Flag> flags = new ArrayList<Flag>();
+
+		flags.addAll(parseCenterFlags());
+		flags.addAll(parseEdgeFlags());
+		flags.addAll(parseGoalFlags());
+		flags.addAll(parseOuterFlags());
+		flags.addAll(parsePenaltyFlags());
+
+		return flags;
 	}
 }
