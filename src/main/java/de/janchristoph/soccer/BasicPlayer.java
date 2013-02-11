@@ -7,6 +7,30 @@ public class BasicPlayer extends Player {
 		super(teamName);
 	}
 
+	/**
+	 * Wird nach dem Start des Clients aufgerufen. Hier sollte sich der Spieler
+	 * beim Server über die init-Funktion anmelden.
+	 */
+	@Override
+	public void onStart() {
+		client.init(getTeamName(), false);
+		client.move(-10, (int) (Math.random() * 15));
+	}
+
+	/**
+	 * Wird nach einem erfolgreichen init-Aufruf aufgerufen. Ab diesem Zeitpunkt
+	 * stehen Trikotnummer und Spielfeldseite zur Verfügung.
+	 */
+	@Override
+	public void onInit() {
+		System.out.println("Ich bin ein Spieler im Team " + getTeamName() + " mit der Trikotnummer " + getuNum() + " und spiele die erste Halbzeit auf der "
+				+ (Side.LEFT.equals(getSide()) ? "linken" : "rechten") + " Seite.");
+	}
+
+	/**
+	 * Wird bei jedem neuen Cycle (nach dem erhalt der ERSTEN! Nachricht in
+	 * einem Cycle) aufgerufen.
+	 */
 	@Override
 	public void onCycle() {
 		if (getLatestGameState() == null) {
@@ -35,17 +59,5 @@ public class BasicPlayer extends Player {
 			System.out.println("Der getCurrentGameState().getBall() liegt vor mir, ich schieße mit Power = 50.");
 			client.kick(50, 0);
 		}
-	}
-
-	@Override
-	public void onInit() {
-		System.out.println("Ich bin ein Spieler im Team " + getTeamName() + " mit der Trikotnummer " + getuNum() + " und spiele die erste Halbzeit auf der "
-				+ (Side.LEFT.equals(getSide()) ? "linken" : "rechten") + " Seite.");
-	}
-
-	@Override
-	public void onStart() {
-		client.init(getTeamName(), false);
-		client.move(-10, (int) (Math.random() * 15));
 	}
 }

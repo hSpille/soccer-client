@@ -27,6 +27,9 @@ public abstract class Player implements DataReceiver {
 		this.teamName = teamName;
 	}
 
+	/**
+	 * Initialisiert den Client und ruft danach die onStart-Methode auf.
+	 */
 	public void start() {
 		client = new Client();
 		client.setNewDataRunnable(this);
@@ -78,17 +81,14 @@ public abstract class Player implements DataReceiver {
 		return gameState;
 	}
 
+	/**
+	 * Gibt das letzte GameState-Objekt zurück.
+	 */
 	protected GameState getLatestGameState() {
 		if (gameStates.size() == 0)
 			return null;
 		return gameStates.get(gameStates.size() - 1);
 	}
-
-	public abstract void onStart();
-
-	public abstract void onInit();
-
-	public abstract void onCycle();
 
 	/**
 	 * Gibt die Trikotnummer des Spielers zurück, falls die init-Message (beim
@@ -134,4 +134,22 @@ public abstract class Player implements DataReceiver {
 	public PlayMode getPlayMode() {
 		return playMode;
 	}
+
+	/**
+	 * Wird nach dem Start des Clients aufgerufen. Hier sollte sich der Spieler
+	 * beim Server über die init-Funktion anmelden.
+	 */
+	public abstract void onStart();
+
+	/**
+	 * Wird nach einem erfolgreichen init-Aufruf aufgerufen. Ab diesem Zeitpunkt
+	 * stehen Trikotnummer und Spielfeldseite zur Verfügung.
+	 */
+	public abstract void onInit();
+
+	/**
+	 * Wird bei jedem neuen Cycle (nach dem erhalt der ERSTEN! Nachricht in
+	 * einem Cycle) aufgerufen.
+	 */
+	public abstract void onCycle();
 }
