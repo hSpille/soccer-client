@@ -93,7 +93,7 @@ public class SeeParser {
 		return flags;
 	}
 
-	private FlagType parseEdgeFlagType(char typeChar1, char typeChar2) {
+	FlagType parseEdgeFlagType(char typeChar1, char typeChar2) {
 		FlagType type = null;
 		if (typeChar1 == 'l' && typeChar2 == 't') {
 			type = FlagType.LEFT_TOP;
@@ -132,7 +132,7 @@ public class SeeParser {
 		return flags;
 	}
 
-	private FlagType parseGoalFlagType(char typeChar1, char typeChar2) {
+	FlagType parseGoalFlagType(char typeChar1, char typeChar2) {
 		FlagType type = null;
 		if (typeChar1 == 'l' && typeChar2 == 't') {
 			type = FlagType.GOAL_LEFT_TOP;
@@ -153,7 +153,7 @@ public class SeeParser {
 		return false;
 	}
 
-	public Flag parseCenterFlag() {
+	public Flag parseCenterFlags() {
 		Matcher m = CENTER_FLAG_PATTERN.matcher(seeString);
 		if (!m.find())
 			return null;
@@ -162,5 +162,56 @@ public class SeeParser {
 		flag.setDistance(Double.valueOf(m.group(1)));
 		flag.setDirection(Double.valueOf(m.group(2)));
 		return flag;
+	}
+
+	public List<Flag> parseOuterFlags() {
+		List<Flag> flags = new ArrayList<Flag>();
+
+		Matcher m = Pattern.compile("\\(\\(flag ([rltb]) ([rltb]) ([0-9]0)\\) ([0-9-.]+) ([0-9-.]+)\\)").matcher(seeString);
+		while (m.find()) {
+			Flag flag = new Flag();
+			FlagType type = parseOuterFlagType(m.group(1).charAt(0), m.group(2).charAt(0), m.group(3));
+			if (type == null)
+				continue;
+			flag.setType(type);
+			flag.setDistance(Double.valueOf(m.group(4)));
+			flag.setDirection(Double.valueOf(m.group(5)));
+			flags.add(flag);
+		}
+
+		return flags;
+	}
+
+	FlagType parseOuterFlagType(char typeChar1, char typeChar2, String num) {
+		FlagType type = null;
+		String typeString = "";
+
+		if (typeChar1 == 'l')
+			typeString += "LEFT_";
+		else if (typeChar1 == 'r')
+			typeString += "RIGHT_";
+		else if (typeChar1 == 't')
+			typeString += "TOP_";
+		else if (typeChar1 == 'b')
+			typeString += "BOTTOM_";
+
+		if (typeChar2 == 'l')
+			typeString += "LEFT_";
+		else if (typeChar2 == 'r')
+			typeString += "RIGHT_";
+		else if (typeChar2 == 't')
+			typeString += "TOP_";
+		else if (typeChar2 == 'b')
+			typeString += "BOTTOM_";
+
+		typeString += num;
+
+		try {
+			type = FlagType.valueOf(typeString);
+		} catch (IllegalArgumentException e) {
+			System.err.println("SeeParser->parseOuterFlagType(): FlagType konnte nicht erkannt werden. (" + type + ")");
+			return null;
+		}
+		return type;
 	}
 }
