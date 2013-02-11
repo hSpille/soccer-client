@@ -12,6 +12,7 @@ import de.janchristoph.soccer.model.Goal;
 import de.janchristoph.soccer.model.GoalType;
 
 public class SeeParser {
+	private static final Pattern CENTER_FLAG_PATTERN = Pattern.compile("\\(\\(flag c\\) ([0-9-.]+) ([0-9-.]+)\\)");
 	private static final Pattern GOAL_FLAG_PATTERN = Pattern.compile("\\(\\(flag g ([lr]) ([tb])\\) ([0-9-.]+) ([0-9-.]+)\\)");
 	private static final Pattern EDGE_FLAG_PATTERN = Pattern.compile("\\(\\(flag ([lcr]) ([tb])\\) ([0-9-.]+) ([0-9-.]+)\\)");
 	private static final Pattern GOAL_PATTERN = Pattern.compile("\\(\\([gG]oal\\ ([rl])\\) ([0-9-.]+) ([0-9-.]+)\\)");
@@ -26,11 +27,11 @@ public class SeeParser {
 
 	public Integer parseCycleNumber() {
 		Integer cycle = 0;
-		try{
+		try {
 			Matcher m = CYCLE_PATTERN.matcher(seeString);
 			m.find();
 			cycle = Integer.valueOf(m.group(1));
-		} catch (IllegalStateException ex){
+		} catch (IllegalStateException ex) {
 			System.out.println("Caught Illegal State on: " + seeString);
 		}
 		return cycle;
@@ -150,5 +151,16 @@ public class SeeParser {
 			return true;
 		}
 		return false;
+	}
+
+	public Flag parseCenterFlag() {
+		Matcher m = CENTER_FLAG_PATTERN.matcher(seeString);
+		if (!m.find())
+			return null;
+		Flag flag = new Flag();
+		flag.setType(FlagType.CENTER);
+		flag.setDistance(Double.valueOf(m.group(1)));
+		flag.setDirection(Double.valueOf(m.group(2)));
+		return flag;
 	}
 }
