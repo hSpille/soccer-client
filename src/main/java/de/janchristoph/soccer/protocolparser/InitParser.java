@@ -33,7 +33,7 @@ public class InitParser {
 	}
 
 	public PlayMode parsePlayMode() {
-		return PlayMode.valueOf(getM().group(3));
+		return PlayMode.valueOf(getM().group(3).toUpperCase());
 	}
 
 	public Matcher getM() {
