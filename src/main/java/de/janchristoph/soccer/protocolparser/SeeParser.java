@@ -12,7 +12,8 @@ import de.janchristoph.soccer.model.Goal;
 import de.janchristoph.soccer.model.GoalType;
 
 public class SeeParser {
-	private static final Pattern CENTER_FLAG_PATTERN = Pattern.compile("\\(\\(flag c\\) ([0-9-.]+) ([0-9-.]+)\\)");
+	private static final Pattern OUTER_FLAG_PATTERN = Pattern.compile("\\(\\(flag ([rltb]) ([rltb]) ([0-9]0)\\) ([0-9-.]+) ([0-9-.]+)\\)");
+	private static final Pattern CENTER_FLAG_PATTERN = Pattern.compile("\\(\\(flag ([lcr])\\) ([0-9-.]+) ([0-9-.]+)\\)");
 	private static final Pattern GOAL_FLAG_PATTERN = Pattern.compile("\\(\\(flag g ([lr]) ([tb])\\) ([0-9-.]+) ([0-9-.]+)\\)");
 	private static final Pattern EDGE_FLAG_PATTERN = Pattern.compile("\\(\\(flag ([lcr]) ([tb])\\) ([0-9-.]+) ([0-9-.]+)\\)");
 	private static final Pattern GOAL_PATTERN = Pattern.compile("\\(\\([gG]oal\\ ([rl])\\) ([0-9-.]+) ([0-9-.]+)\\)");
@@ -153,21 +154,33 @@ public class SeeParser {
 		return false;
 	}
 
-	public Flag parseCenterFlags() {
+	public List<Flag> parseCenterFlags() {
+		List<Flag> flags = new ArrayList<Flag>();
 		Matcher m = CENTER_FLAG_PATTERN.matcher(seeString);
-		if (!m.find())
-			return null;
-		Flag flag = new Flag();
-		flag.setType(FlagType.CENTER);
-		flag.setDistance(Double.valueOf(m.group(1)));
-		flag.setDirection(Double.valueOf(m.group(2)));
-		return flag;
+		while (m.find()) {
+			Flag flag = new Flag();
+			flag.setType(parseCenterFlagType(m.group(1).charAt(0)));
+			flag.setDistance(Double.valueOf(m.group(2)));
+			flag.setDirection(Double.valueOf(m.group(3)));
+			flags.add(flag);
+		}
+		return flags;
+	}
+
+	private FlagType parseCenterFlagType(char typeChar) {
+		if (typeChar == 'l')
+			return FlagType.LEFT_0;
+		else if (typeChar == 'r')
+			return FlagType.RIGHT_0;
+		else if (typeChar == 'c')
+			return FlagType.CENTER;
+		return null;
 	}
 
 	public List<Flag> parseOuterFlags() {
 		List<Flag> flags = new ArrayList<Flag>();
 
-		Matcher m = Pattern.compile("\\(\\(flag ([rltb]) ([rltb]) ([0-9]0)\\) ([0-9-.]+) ([0-9-.]+)\\)").matcher(seeString);
+		Matcher m = OUTER_FLAG_PATTERN.matcher(seeString);
 		while (m.find()) {
 			Flag flag = new Flag();
 			FlagType type = parseOuterFlagType(m.group(1).charAt(0), m.group(2).charAt(0), m.group(3));
