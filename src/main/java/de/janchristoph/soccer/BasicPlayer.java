@@ -1,8 +1,9 @@
 package de.janchristoph.soccer;
 
-public class MyPlayer extends Player {
+import de.janchristoph.soccer.model.Side;
 
-	public MyPlayer(String teamName) {
+public class BasicPlayer extends Player {
+	public BasicPlayer(String teamName) {
 		super(teamName);
 	}
 
@@ -34,5 +35,17 @@ public class MyPlayer extends Player {
 			System.out.println("Der getCurrentGameState().getBall() liegt vor mir, ich schieße mit Power = 50.");
 			client.kick(50, 0);
 		}
+	}
+
+	@Override
+	public void onInit() {
+		System.out.println("Ich bin ein Spieler im Team " + getTeamName() + " mit der Trikotnummer " + getuNum() + " und spiele die erste Halbzeit auf der "
+				+ (Side.LEFT.equals(getSide()) ? "linken" : "rechten") + " Seite.");
+	}
+
+	@Override
+	public void onStart() {
+		client.init(getTeamName(), false);
+		client.move(-10, (int) (Math.random() * 15));
 	}
 }

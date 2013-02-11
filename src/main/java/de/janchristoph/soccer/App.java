@@ -4,12 +4,10 @@ package de.janchristoph.soccer;
 public class App {
 
 	public static void main(String[] args) {
-		MyPlayer a1 = new MyPlayer("TeamHS");
+		BasicPlayer a1 = new BasicPlayer("TeamHS");
 		a1.start();
-		MyPlayer b1 = new MyPlayer("TeamJC");
+		BasicPlayer b1 = new BasicPlayer("TeamJC");
 		b1.start();
-		
-		
 	}
 
 }

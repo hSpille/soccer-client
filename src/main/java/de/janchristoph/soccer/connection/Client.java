@@ -2,7 +2,7 @@ package de.janchristoph.soccer.connection;
 
 public class Client {
 	private ConnectionManager cm = new ConnectionManager();
-	private NewDataRunnable newDataRunnable;
+	private DataReceiver newDataRunnable;
 	private Thread listenerThread;
 
 	public Client() {
@@ -13,8 +13,8 @@ public class Client {
 		listenerThread.start();
 	}
 
-	public void init(String teamname) {
-		cm.send("(init " + teamname + ")");
+	public void init(String teamname, boolean goalie) {
+		cm.send("(init " + teamname + " (version 15)" + (goalie ? " (goalie)" : "") + ")");
 	}
 
 	public void reconnect(String teamname, Integer unum) {
@@ -69,11 +69,11 @@ public class Client {
 		newDataRunnable.onNewData(line);
 	}
 
-	public NewDataRunnable getNewDataRunnable() {
+	public DataReceiver getNewDataRunnable() {
 		return newDataRunnable;
 	}
 
-	public void setNewDataRunnable(NewDataRunnable newDataRunnable) {
+	public void setNewDataRunnable(DataReceiver newDataRunnable) {
 		this.newDataRunnable = newDataRunnable;
 	}
 }
