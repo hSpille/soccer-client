@@ -12,6 +12,7 @@ import de.janchristoph.soccer.model.Goal;
 import de.janchristoph.soccer.model.GoalType;
 
 public class SeeParser {
+	private static final Pattern PENALTY_FLAG_PATTERN = Pattern.compile("\\(\\(flag p ([rl]) ([tcb])\\) ([0-9-.]+) ([0-9-.]+)\\)");
 	private static final Pattern OUTER_FLAG_PATTERN = Pattern.compile("\\(\\(flag ([rltb]) ([rltb]) ([0-9]0)\\) ([0-9-.]+) ([0-9-.]+)\\)");
 	private static final Pattern CENTER_FLAG_PATTERN = Pattern.compile("\\(\\(flag ([lcr])\\) ([0-9-.]+) ([0-9-.]+)\\)");
 	private static final Pattern GOAL_FLAG_PATTERN = Pattern.compile("\\(\\(flag g ([lr]) ([tb])\\) ([0-9-.]+) ([0-9-.]+)\\)");
@@ -224,6 +225,47 @@ public class SeeParser {
 		} catch (IllegalArgumentException e) {
 			System.err.println("SeeParser->parseOuterFlagType(): FlagType konnte nicht erkannt werden. (" + type + ")");
 			return null;
+		}
+		return type;
+	}
+
+	public List<Flag> parsePenaltyFlags() {
+		List<Flag> flags = new ArrayList<Flag>();
+		Matcher m = PENALTY_FLAG_PATTERN.matcher(seeString);
+
+		while (m.find()) {
+			Flag flag = new Flag();
+
+			char typeChar1 = m.group(1).charAt(0);
+			char typeChar2 = m.group(2).charAt(0);
+
+			flag.setType(parsePenaltyFlagType(typeChar1, typeChar2));
+
+			flag.setDistance(Double.valueOf(m.group(3)));
+			flag.setDirection(Double.valueOf(m.group(4)));
+
+			System.out.println(flag.getType());
+
+			flags.add(flag);
+		}
+
+		return flags;
+	}
+
+	FlagType parsePenaltyFlagType(char typeChar1, char typeChar2) {
+		FlagType type = null;
+		if (typeChar1 == 'l' && typeChar2 == 't') {
+			type = FlagType.PENALTY_LEFT_TOP;
+		} else if (typeChar1 == 'r' && typeChar2 == 't') {
+			type = FlagType.PENALTY_RIGHT_TOP;
+		} else if (typeChar1 == 'l' && typeChar2 == 'c') {
+			type = FlagType.PENALTY_LEFT_CENTER;
+		} else if (typeChar1 == 'r' && typeChar2 == 'c') {
+			type = FlagType.PENALTY_RIGHT_CENTER;
+		} else if (typeChar1 == 'l' && typeChar2 == 'b') {
+			type = FlagType.PENALTY_LEFT_BOTTOM;
+		} else if (typeChar1 == 'r' && typeChar2 == 'b') {
+			type = FlagType.PENALTY_RIGHT_BOTTOM;
 		}
 		return type;
 	}
