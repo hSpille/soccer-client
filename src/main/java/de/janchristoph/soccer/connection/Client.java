@@ -14,7 +14,7 @@ public class Client {
 	}
 
 	public void init(String teamname, boolean goalie) {
-		cm.send("(init " + teamname + " (version 15)" + (goalie ? " (goalie)" : "") + ")");
+		cm.send("(init " + teamname + " (version 7)" + (goalie ? " (goalie)" : "") + ")");
 	}
 
 	public void reconnect(String teamname, Integer unum) {

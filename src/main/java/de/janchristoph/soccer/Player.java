@@ -38,6 +38,7 @@ public abstract class Player implements DataReceiver {
 	}
 
 	public void onNewData(String line) {
+	  System.out.println(line);
 		Integer cycle = -1;
 		if (line.startsWith(SeeParser.PROTOCOL_SEE_START)) {
 			SeeParser parser = new SeeParser(line);
