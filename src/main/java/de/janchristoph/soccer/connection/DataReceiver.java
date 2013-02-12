@@ -1,5 +1,5 @@
 package de.janchristoph.soccer.connection;
 
-public interface NewDataRunnable {
+public interface DataReceiver {
 	public void onNewData(String line);
 }

@@ -1,11 +1,36 @@
 package de.janchristoph.soccer;
 
-public class MyPlayer extends Player {
+import de.janchristoph.soccer.model.Side;
 
-	public MyPlayer(String teamName) {
+public class BasicPlayer extends Player {
+	public BasicPlayer(String teamName) {
 		super(teamName);
 	}
 
+	/**
+	 * Wird nach dem Start des Clients aufgerufen. Hier sollte sich der Spieler
+	 * beim Server über die init-Funktion anmelden.
+	 */
+	@Override
+	public void onStart() {
+		client.init(getTeamName(), false);
+		client.move(-10, (int) (Math.random() * 15));
+	}
+
+	/**
+	 * Wird nach einem erfolgreichen init-Aufruf aufgerufen. Ab diesem Zeitpunkt
+	 * stehen Trikotnummer und Spielfeldseite zur Verfügung.
+	 */
+	@Override
+	public void onInit() {
+		System.out.println("Ich bin ein Spieler im Team " + getTeamName() + " mit der Trikotnummer " + getuNum() + " und spiele die erste Halbzeit auf der "
+				+ (Side.LEFT.equals(getSide()) ? "linken" : "rechten") + " Seite.");
+	}
+
+	/**
+	 * Wird bei jedem neuen Cycle (nach dem erhalt der ERSTEN! Nachricht in
+	 * einem Cycle) aufgerufen.
+	 */
 	@Override
 	public void onCycle() {
 		if (getLatestGameState() == null) {

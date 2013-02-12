@@ -11,7 +11,14 @@ import de.janchristoph.soccer.model.FlagType;
 import de.janchristoph.soccer.model.Goal;
 import de.janchristoph.soccer.model.GoalType;
 
+/**
+ * TODO: Linien parsen
+ * TODO: Player parsen
+ */
 public class SeeParser {
+	private static final Pattern PENALTY_FLAG_PATTERN = Pattern.compile("\\(\\(flag p ([rl]) ([tcb])\\) ([0-9-.]+) ([0-9-.]+)\\)");
+	private static final Pattern OUTER_FLAG_PATTERN = Pattern.compile("\\(\\(flag ([rltb]) ([rltb]) ([0-9]0)\\) ([0-9-.]+) ([0-9-.]+)\\)");
+	private static final Pattern CENTER_FLAG_PATTERN = Pattern.compile("\\(\\(flag ([lcr])\\) ([0-9-.]+) ([0-9-.]+)\\)");
 	private static final Pattern GOAL_FLAG_PATTERN = Pattern.compile("\\(\\(flag g ([lr]) ([tb])\\) ([0-9-.]+) ([0-9-.]+)\\)");
 	private static final Pattern EDGE_FLAG_PATTERN = Pattern.compile("\\(\\(flag ([lcr]) ([tb])\\) ([0-9-.]+) ([0-9-.]+)\\)");
 	private static final Pattern GOAL_PATTERN = Pattern.compile("\\(\\([gG]oal\\ ([rl])\\) ([0-9-.]+) ([0-9-.]+)\\)");
@@ -26,11 +33,11 @@ public class SeeParser {
 
 	public Integer parseCycleNumber() {
 		Integer cycle = 0;
-		try{
+		try {
 			Matcher m = CYCLE_PATTERN.matcher(seeString);
 			m.find();
 			cycle = Integer.valueOf(m.group(1));
-		} catch (IllegalStateException ex){
+		} catch (IllegalStateException ex) {
 			System.out.println("Caught Illegal State on: " + seeString);
 		}
 		return cycle;
@@ -92,7 +99,7 @@ public class SeeParser {
 		return flags;
 	}
 
-	private FlagType parseEdgeFlagType(char typeChar1, char typeChar2) {
+	FlagType parseEdgeFlagType(char typeChar1, char typeChar2) {
 		FlagType type = null;
 		if (typeChar1 == 'l' && typeChar2 == 't') {
 			type = FlagType.LEFT_TOP;
@@ -131,7 +138,7 @@ public class SeeParser {
 		return flags;
 	}
 
-	private FlagType parseGoalFlagType(char typeChar1, char typeChar2) {
+	FlagType parseGoalFlagType(char typeChar1, char typeChar2) {
 		FlagType type = null;
 		if (typeChar1 == 'l' && typeChar2 == 't') {
 			type = FlagType.GOAL_LEFT_TOP;
@@ -150,5 +157,132 @@ public class SeeParser {
 			return true;
 		}
 		return false;
+	}
+
+	public List<Flag> parseCenterFlags() {
+		List<Flag> flags = new ArrayList<Flag>();
+		Matcher m = CENTER_FLAG_PATTERN.matcher(seeString);
+		while (m.find()) {
+			Flag flag = new Flag();
+			flag.setType(parseCenterFlagType(m.group(1).charAt(0)));
+			flag.setDistance(Double.valueOf(m.group(2)));
+			flag.setDirection(Double.valueOf(m.group(3)));
+			flags.add(flag);
+		}
+		return flags;
+	}
+
+	private FlagType parseCenterFlagType(char typeChar) {
+		if (typeChar == 'l')
+			return FlagType.LEFT_0;
+		else if (typeChar == 'r')
+			return FlagType.RIGHT_0;
+		else if (typeChar == 'c')
+			return FlagType.CENTER;
+		return null;
+	}
+
+	public List<Flag> parseOuterFlags() {
+		List<Flag> flags = new ArrayList<Flag>();
+
+		Matcher m = OUTER_FLAG_PATTERN.matcher(seeString);
+		while (m.find()) {
+			Flag flag = new Flag();
+			FlagType type = parseOuterFlagType(m.group(1).charAt(0), m.group(2).charAt(0), m.group(3));
+			if (type == null)
+				continue;
+			flag.setType(type);
+			flag.setDistance(Double.valueOf(m.group(4)));
+			flag.setDirection(Double.valueOf(m.group(5)));
+			flags.add(flag);
+		}
+
+		return flags;
+	}
+
+	FlagType parseOuterFlagType(char typeChar1, char typeChar2, String num) {
+		FlagType type = null;
+		String typeString = "";
+
+		if (typeChar1 == 'l')
+			typeString += "LEFT_";
+		else if (typeChar1 == 'r')
+			typeString += "RIGHT_";
+		else if (typeChar1 == 't')
+			typeString += "TOP_";
+		else if (typeChar1 == 'b')
+			typeString += "BOTTOM_";
+
+		if (typeChar2 == 'l')
+			typeString += "LEFT_";
+		else if (typeChar2 == 'r')
+			typeString += "RIGHT_";
+		else if (typeChar2 == 't')
+			typeString += "TOP_";
+		else if (typeChar2 == 'b')
+			typeString += "BOTTOM_";
+
+		typeString += num;
+
+		try {
+			type = FlagType.valueOf(typeString);
+		} catch (IllegalArgumentException e) {
+			System.err.println("SeeParser->parseOuterFlagType(): FlagType konnte nicht erkannt werden. (" + type + ")");
+			return null;
+		}
+		return type;
+	}
+
+	public List<Flag> parsePenaltyFlags() {
+		List<Flag> flags = new ArrayList<Flag>();
+		Matcher m = PENALTY_FLAG_PATTERN.matcher(seeString);
+
+		while (m.find()) {
+			Flag flag = new Flag();
+
+			char typeChar1 = m.group(1).charAt(0);
+			char typeChar2 = m.group(2).charAt(0);
+
+			flag.setType(parsePenaltyFlagType(typeChar1, typeChar2));
+
+			flag.setDistance(Double.valueOf(m.group(3)));
+			flag.setDirection(Double.valueOf(m.group(4)));
+
+			System.out.println(flag.getType());
+
+			flags.add(flag);
+		}
+
+		return flags;
+	}
+
+	FlagType parsePenaltyFlagType(char typeChar1, char typeChar2) {
+		FlagType type = null;
+		if (typeChar1 == 'l' && typeChar2 == 't') {
+			type = FlagType.PENALTY_LEFT_TOP;
+		} else if (typeChar1 == 'r' && typeChar2 == 't') {
+			type = FlagType.PENALTY_RIGHT_TOP;
+		} else if (typeChar1 == 'l' && typeChar2 == 'c') {
+			type = FlagType.PENALTY_LEFT_CENTER;
+		} else if (typeChar1 == 'r' && typeChar2 == 'c') {
+			type = FlagType.PENALTY_RIGHT_CENTER;
+		} else if (typeChar1 == 'l' && typeChar2 == 'b') {
+			type = FlagType.PENALTY_LEFT_BOTTOM;
+		} else if (typeChar1 == 'r' && typeChar2 == 'b') {
+			type = FlagType.PENALTY_RIGHT_BOTTOM;
+		}
+		return type;
+	}
+
+	public List<Flag> parseAllFlags() {
+		List<Flag> flags = new ArrayList<Flag>();
+
+		flags.addAll(parseCenterFlags());
+		flags.addAll(parseEdgeFlags());
+		flags.addAll(parseGoalFlags());
+		flags.addAll(parseOuterFlags());
+		flags.addAll(parsePenaltyFlags());
+
+		return flags;
 	}
 }

@@ -8,26 +8,25 @@ public class GameState {
 	private Integer cycle;
 	private List<Flag> flags;
 	private Ball ball;
-	private Goal rGoal;
-	private Goal lGoal;
+	private Goal rightGoal;
+	private Goal leftGoal;
 	private SeeParser parser;
-	
-	
-	public GameState(){
-		
+
+	public GameState() {
+
 	}
-	
-	public GameState (String serverData){
+
+	public GameState(String serverData) {
 		parser = new SeeParser(serverData);
 		this.ball = parser.parseBall();
 		this.cycle = parser.parseCycleNumber();
 		List<Goal> goals = parser.parseGoals();
 		for (Goal goal : goals) {
-			if(GoalType.LEFT.equals(goal.getType())){
-				lGoal = goal;
+			if (GoalType.LEFT.equals(goal.getType())) {
+				leftGoal = goal;
 			}
-			if(GoalType.RIGHT.equals(goal.getType())){
-				rGoal = goal;
+			if (GoalType.RIGHT.equals(goal.getType())) {
+				rightGoal = goal;
 			}
 		}
 	}
@@ -55,12 +54,20 @@ public class GameState {
 	public void setCycle(Integer cycle) {
 		this.cycle = cycle;
 	}
-	
-	public Goal getLeftGoal(){
-		return lGoal;
+
+	public Goal getRightGoal() {
+		return rightGoal;
 	}
-	
-	public Goal getRightGoal(){
-		return rGoal;
+
+	public void setRightGoal(Goal rightGoal) {
+		this.rightGoal = rightGoal;
+	}
+
+	public Goal getLeftGoal() {
+		return leftGoal;
+	}
+
+	public void setLeftGoal(Goal leftGoal) {
+		this.leftGoal = leftGoal;
 	}
 }
