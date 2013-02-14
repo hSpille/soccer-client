@@ -10,12 +10,14 @@ import de.janchristoph.soccer.model.Flag;
 import de.janchristoph.soccer.model.FlagType;
 import de.janchristoph.soccer.model.Goal;
 import de.janchristoph.soccer.model.GoalType;
+import de.janchristoph.soccer.model.Line;
+import de.janchristoph.soccer.model.LineType;
 
 /**
- * TODO: Linien parsen
- * TODO: Player parsen
+ * TODO: Linien parsen TODO: Player parsen
  */
 public class SeeParser {
+	private static final Pattern LINE_PATTERN = Pattern.compile("\\(\\([lL]ine ([rltb])\\) ([0-9-.]+) ([0-9-.]+)\\)");
 	private static final Pattern PENALTY_FLAG_PATTERN = Pattern.compile("\\(\\(flag p ([rl]) ([tcb])\\) ([0-9-.]+) ([0-9-.]+)\\)");
 	private static final Pattern OUTER_FLAG_PATTERN = Pattern.compile("\\(\\(flag ([rltb]) ([rltb]) ([0-9]0)\\) ([0-9-.]+) ([0-9-.]+)\\)");
 	private static final Pattern CENTER_FLAG_PATTERN = Pattern.compile("\\(\\(flag ([lcr])\\) ([0-9-.]+) ([0-9-.]+)\\)");
@@ -248,8 +250,6 @@ public class SeeParser {
 			flag.setDistance(Double.valueOf(m.group(3)));
 			flag.setDirection(Double.valueOf(m.group(4)));
 
-			System.out.println(flag.getType());
-
 			flags.add(flag);
 		}
 
@@ -284,5 +284,31 @@ public class SeeParser {
 		flags.addAll(parsePenaltyFlags());
 
 		return flags;
+	}
+
+	public List<Line> parseLines() {
+		List<Line> lines = new ArrayList<Line>();
+		Matcher m = LINE_PATTERN.matcher(seeString);
+		while (m.find()) {
+			Line line = new Line();
+			line.setType(parseLineType(m.group(1).charAt(0)));
+			line.setDistance(Double.valueOf(m.group(2)));
+			line.setDirection(Double.valueOf(m.group(3)));
+			lines.add(line);
+		}
+		return lines;
+	}
+
+	private LineType parseLineType(char typeChar) {
+		LineType type = null;
+		if (typeChar == 'l')
+			type = LineType.LEFT;
+		else if (typeChar == 'r')
+			type = LineType.RIGHT;
+		else if (typeChar == 't')
+			type = LineType.TOP;
+		else if (typeChar == 'b')
+			type = LineType.BOTTOM;
+		return type;
 	}
 }
