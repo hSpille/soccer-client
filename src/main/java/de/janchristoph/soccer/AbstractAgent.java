@@ -2,6 +2,8 @@ package de.janchristoph.soccer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import de.janchristoph.soccer.connection.Client;
 import de.janchristoph.soccer.connection.DataReceiver;
@@ -14,7 +16,7 @@ import de.janchristoph.soccer.model.Side;
 import de.janchristoph.soccer.protocolparser.InitParser;
 import de.janchristoph.soccer.protocolparser.SeeParser;
 
-public abstract class Player implements DataReceiver {
+public abstract class AbstractAgent implements DataReceiver {
 	protected Client client;
 	private List<GameState> gameStates = new ArrayList<GameState>();
 	private Integer lastCycle = -1;
@@ -22,8 +24,10 @@ public abstract class Player implements DataReceiver {
 	private Side side;
 	private Integer uNum = 0;
 	private PlayMode playMode = PlayMode.NULL;
+	private Timer timer = new Timer(true);
+	protected boolean debugging;
 
-	public Player(String teamName) {
+	public AbstractAgent(String teamName) {
 		this.teamName = teamName;
 	}
 
@@ -32,18 +36,26 @@ public abstract class Player implements DataReceiver {
 	 */
 	public void start() {
 		client = new Client();
-		client.setNewDataRunnable(this);
+		client.setDataReceiver(this);
 		client.startListening();
 		onStart();
 	}
 
 	public void onNewData(String line) {
-		Integer cycle = -1;
+		// if (debugging)
+		// System.out.println(line);
+
+		GameState gameState = null;
+		boolean newGameState = false;
 		if (line.startsWith(SeeParser.PROTOCOL_SEE_START)) {
 			SeeParser parser = new SeeParser(line);
-			cycle = parser.parseCycleNumber();
+			Integer cycle = parser.parseCycleNumber();
 
-			GameState gameState = getOrCreateGameStateWith(cycle);
+			gameState = findGameStateForCycle(cycle);
+			if (gameState == null) {
+				newGameState = true;
+				gameState = createNewGameState(cycle);
+			}
 
 			Ball ball = parser.parseBall();
 			gameState.setBall(ball);
@@ -55,29 +67,61 @@ public abstract class Player implements DataReceiver {
 				else if (g.getType().equals(GoalType.RIGHT))
 					gameState.setRightGoal(g);
 			}
+			
+			gameState.setLines(parser.parseLines());
+
+			gameState.setGotSeeParserData(true);
 		} else if (line.startsWith("(init")) {
 			InitParser parser = new InitParser(line);
 			side = parser.parseSide();
 			uNum = parser.parseUNum();
 			onInit();
 		} else if (line.startsWith("(body_sense")) {
-
 		}
-		if (lastCycle < cycle) {
-			onCycle();
-			lastCycle = cycle;
+
+		if (newGameState) {
+			// This is a new Cycle, so set a Timer to 50ms
+			// (let's wait for other messages in this cycle)
+			timer.schedule(new TimerTask() {
+				public void run() {
+					// run agent's onCycle
+					onPreCycle();
+				}
+			}, 10);
+			if (debugging)
+				System.out.println("timer gesetzt");
 		}
 	}
 
-	private GameState getOrCreateGameStateWith(Integer cycle) {
-		for (GameState gameState : gameStates) {
-			if (gameState.getCycle().equals(cycle)) {
-				return gameState;
-			}
+	private void onPreCycle() {
+		GameState latestGameState = getLatestGameState();
+		GameState preLatestGameState = gameStates.get(gameStates.size() - 1);
+		
+		if (!latestGameState.isGotSeeParserData()) {
+			latestGameState.setBall(preLatestGameState.getBall());
+			latestGameState.setFlags(preLatestGameState.getFlags());
+			latestGameState.setLeftGoal(preLatestGameState.getLeftGoal());
+			latestGameState.setRightGoal(preLatestGameState.getRightGoal());
+			latestGameState.setLines(preLatestGameState.getLines());
 		}
+		
+		onCycle();
+	}
+
+	private GameState createNewGameState(Integer cycle) {
 		GameState gameState = new GameState();
 		gameState.setCycle(cycle);
 		gameStates.add(gameState);
+		return gameState;
+	}
+
+	private GameState findGameStateForCycle(Integer cycle) {
+		GameState gameState = null;
+		for (GameState gs : gameStates) {
+			if (gs.getCycle().equals(cycle)) {
+				gameState = gs;
+			}
+		}
 		return gameState;
 	}
 
@@ -85,8 +129,9 @@ public abstract class Player implements DataReceiver {
 	 * Gibt das letzte GameState-Objekt zurück.
 	 */
 	protected GameState getLatestGameState() {
-		if (gameStates.size() == 0)
+		if (gameStates.size() == 0) {
 			return null;
+		}
 		return gameStates.get(gameStates.size() - 1);
 	}
 
@@ -152,4 +197,8 @@ public abstract class Player implements DataReceiver {
 	 * einem Cycle) aufgerufen.
 	 */
 	public abstract void onCycle();
+
+	public void enableDebugging() {
+		debugging = true;
+	}
 }
