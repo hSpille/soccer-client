@@ -6,10 +6,9 @@ import de.janchristoph.soccer.connection.ConnectionManager;
 import de.janchristoph.soccer.model.Ball;
 import de.janchristoph.soccer.model.GameState;
 import de.janchristoph.soccer.model.Goal;
-import de.janchristoph.soccer.model.SenseBodyParser;
 import de.janchristoph.soccer.protocolparser.SeeParser;
+import de.janchristoph.soccer.protocolparser.SenseBodyParser;
 import de.janchristoph.soccer.protocolparser.StateParser;
-import de.neusta.soccerclient.Agent;
 import de.neusta.soccerclient.provided.connection.Receiver;
 
 public class Client {
@@ -25,11 +24,12 @@ public class Client {
 	private GameState latestGameState = null;
 	public GAMESTATE currentGameState = GAMESTATE.BEFORE_KICKOFF;
 	public int latestProcessedGamestate = -1;
-	private Agent agent;
+	private IAgent agent;
 	private final int initialPositionX;
 	private final int initialPositionY;
 
-	public Client(String team, String server, Agent agent, int initialPositionX, int initialPositionY) {
+	public Client(String team, String server, IAgent agent,
+			int initialPositionX, int initialPositionY) {
 		this.agent = agent;
 		this.team = team;
 		this.serverIp = server;
@@ -64,9 +64,6 @@ public class Client {
 	public void changeView(Integer width, Integer quality) {
 		conMan.send("(change_view " + width + " " + quality + ")");
 	}
-
-	
-
 
 	public void dash(Integer power) {
 		conMan.send("(dash " + power + ")");
@@ -117,13 +114,11 @@ public class Client {
 	}
 
 	public synchronized void updateGameStates(String line) {
-		boolean newSee = false;
 		if (StateParser.isStateMessage(line)) {
 			this.currentGameState = StateParser.getState(line);
 			System.out.println("GameState now "
 					+ this.currentGameState.toString());
 		} else if (SeeParser.isSeeMessage(line)) {
-			newSee = true;
 			GameState state = new GameState(line);
 			this.addState(state);
 			this.setLatestGameState(state);
@@ -132,22 +127,19 @@ public class Client {
 		} else {
 			System.out.println("Dunno this message: " + line);
 		}
-		if(newSee){
-			agent.doMove();
-		}
+		agent.doMove();
 	}
-
 
 	public boolean canKick() {
 		Ball ball = latestGameState.getBall();
-		if(ball != null){
+		if (ball != null) {
 			Double distance = ball.getDistance();
 			return distance < 1;
 		}
 		return false;
 	}
-	
-	public Goal getOpponentGoal(){
+
+	public Goal getOpponentGoal() {
 		return null;
 	}
 

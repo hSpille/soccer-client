@@ -1,4 +1,4 @@
-package de.janchristoph.soccer.model;
+package de.janchristoph.soccer.protocolparser;
 
 public class SenseBodyParser {
 	public static String SENSE_BODY_PROTCOL_BEGIN = "(sense_body";
