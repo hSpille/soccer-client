@@ -21,4 +21,11 @@ public class Agent implements IAgent {
 	public boolean isConnected() {
 		return true;
 	}
+
+
+	@Override
+	public void doSenseBody() {
+		// TODO Auto-generated method stub
+		
+	}
 }

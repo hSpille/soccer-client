@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import de.janchristoph.soccer.connection.ConnectionManager;
 import de.janchristoph.soccer.model.Ball;
+import de.janchristoph.soccer.model.BodyState;
 import de.janchristoph.soccer.model.GameState;
 import de.janchristoph.soccer.model.Goal;
 import de.janchristoph.soccer.protocolparser.SeeParser;
@@ -21,15 +22,14 @@ public class Client {
 	private final String serverIp;
 	private ConnectionManager conMan;
 	private ArrayList<GameState> gamestates = new ArrayList<GameState>();
+	private BodyState bodyState = null;
 	private GameState latestGameState = null;
 	public GAMESTATE currentGameState = GAMESTATE.BEFORE_KICKOFF;
-	public int latestProcessedGamestate = -1;
 	private IAgent agent;
 	private final int initialPositionX;
 	private final int initialPositionY;
 
-	public Client(String team, String server, IAgent agent,
-			int initialPositionX, int initialPositionY) {
+	public Client(String team, String server, IAgent agent, int initialPositionX, int initialPositionY) {
 		this.agent = agent;
 		this.team = team;
 		this.serverIp = server;
@@ -116,18 +116,20 @@ public class Client {
 	public synchronized void updateGameStates(String line) {
 		if (StateParser.isStateMessage(line)) {
 			this.currentGameState = StateParser.getState(line);
-			System.out.println("GameState now "
-					+ this.currentGameState.toString());
-		} else if (SeeParser.isSeeMessage(line)) {
+			System.out.println("GameState now " + this.currentGameState.toString());
+			agent.doMove();
+		} 
+		if (SeeParser.isSeeMessage(line)) {
 			GameState state = new GameState(line);
 			this.addState(state);
 			this.setLatestGameState(state);
-		} else if (SenseBodyParser.isSenseMessage(line)) {
-			// sense body whatever
-		} else {
-			System.out.println("Dunno this message: " + line);
-		}
-		agent.doMove();
+			agent.doMove();
+		} 
+		if (SenseBodyParser.isSenseMessage(line)) {
+			this.bodyState = new BodyState(line);
+			agent.doSenseBody();
+		} 
+		
 	}
 
 	public boolean canKick() {
@@ -141,6 +143,14 @@ public class Client {
 
 	public Goal getOpponentGoal() {
 		return null;
+	}
+
+	public BodyState getBodyState() {
+		return bodyState;
+	}
+
+	public void setBodyState(BodyState bodyState) {
+		this.bodyState = bodyState;
 	}
 
 }

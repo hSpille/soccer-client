@@ -6,4 +6,6 @@ public interface IAgent {
 
 	public boolean isConnected();
 
+	void doSenseBody();
+
 }
